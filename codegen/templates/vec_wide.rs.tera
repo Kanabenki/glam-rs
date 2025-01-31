@@ -1,0 +1,298 @@
+{% import "macros.rs.tera" as macros %}
+
+// Generated from {{template_path}} template. Edit the template, not the generated file.
+
+{% if is_scalar and not is_align %}
+    {% set mask_t = "BVec" ~ dim  ~ "X4" %}
+{% else %}
+    {% set is_simd = true %}
+    {% if is_sse2 %}
+        {% set simd_t = "__m128" %}
+    {% else %}
+        {% set is_simd = false %}
+    {% endif %}
+    {% set mask_t = "BVec" ~ dim ~ "A" %}
+{% endif %}
+
+{% if scalar_t == "f32" %}
+    {% set is_signed = true %}
+    {% set is_float = true %}
+    {% set vec_t = "Vec" ~ dim %}
+    {% set self_t = "Vec" ~ dim ~ "X4" %}
+{% endif %}
+
+{% set components = ["x", "y", "z", "w"] | slice(end = dim) %}
+{% if is_float %}
+    {% set one = "[1.0; 4]" %}
+    {% set neg_one = "[-1.0; 4]" %}
+    {% set zero = "[0.0; 4]" %}
+{% endif %}
+
+{% if is_sse2 %}
+use crate::sse2::*;
+{% endif %}
+
+{% if is_sse2 %}
+#[cfg(target_arch = "x86")]
+use core::arch::x86::*;
+#[cfg(target_arch = "x86_64")]
+use core::arch::x86_64::*;
+{% endif %}
+
+use crate::{{ vec_t }};
+
+{% if is_sse2 %}
+#[repr(C)]
+union UnionCast {
+    a: [f32; 4],
+    v: {{ simd_t }}
+}
+{% endif %}
+
+#[inline(always)]
+#[must_use]
+pub const fn {{ self_t | lower }}(
+    {% for c in components %}
+        {{ c }}:  [{{ scalar_t }}; 4],
+    {% endfor %}
+) -> {{ self_t }} {
+    {{ self_t }}::new({{ components | join(sep=",") }})
+}
+
+#[derive(
+    Clone,
+    Copy,
+)]
+{%- if is_scalar %}
+#[cfg_attr(not(target_arch = "spirv"), repr(C))]
+#[cfg_attr(target_arch = "spirv", repr(simd))]
+pub struct {{ self_t }}
+{
+    {% for c in components %}
+        pub {{ c }}: [{{ scalar_t }}; 4],
+    {%- endfor %}
+}
+{% else %}
+pub struct {{ self_t }}
+{
+    {% for c in components %}
+        pub(crate) {{ c }}: {{ simd_t }},
+    {%- endfor %}
+}{% endif %}
+
+impl {{ self_t }} {
+    /// All zeroes.
+    pub const ZERO: Self = Self::broadcast({{ zero }});
+
+    /// All ones.
+    pub const ONE: Self = Self::broadcast({{ one }});
+
+{% if is_signed %}
+    /// All negative ones.
+    pub const NEG_ONE: Self = Self::broadcast({{ neg_one }});
+{% endif %}
+
+    /// All `{{ scalar_t }}::MIN`.
+    pub const MIN: Self = Self::broadcast([{{ scalar_t }}::MIN; 4]);
+
+    /// All `{{ scalar_t }}::MAX`.
+    pub const MAX: Self = Self::broadcast([{{ scalar_t }}::MAX; 4]);
+
+{% if is_float %}
+    /// All `{{ scalar_t }}::NAN`.
+    pub const NAN: Self = Self::broadcast([{{ scalar_t }}::NAN; 4]);
+
+    /// All `{{ scalar_t }}::INFINITY`.
+    pub const INFINITY: Self = Self::broadcast([{{ scalar_t }}::INFINITY; 4]);
+
+    /// All `{{ scalar_t }}::NEG_INFINITY`.
+    pub const NEG_INFINITY: Self = Self::broadcast([{{ scalar_t }}::NEG_INFINITY; 4]);
+{% endif %}
+
+{% for i in range(end = dim) %}
+    {% set C = components[i] | upper %}
+    pub const {{ C }}: Self = Self::new(
+        {% for j in range(end = dim) %}
+            {% if i == j %} {{ one }} {% else %} {{ zero }} {% endif %},
+        {%- endfor %}
+    );
+{% endfor %}
+
+{% if is_signed %}
+    {% for i in range(end = dim) %}
+        {% set C = components[i] | upper %}
+        pub const NEG_{{ C }}: Self = Self::new(
+            {% for j in range(end = dim) %}
+                {% if i == j %} {{ neg_one }} {% else %} {{ zero }} {% endif %},
+            {%- endfor %}
+        );
+    {% endfor %}
+{% endif %}
+
+    #[inline(always)]
+    #[must_use]
+    pub const fn new(
+        {% for c in components %}
+            {{ c }}: [{{ scalar_t }}; 4],
+        {% endfor %}
+    ) -> Self {
+        {% if is_scalar %}
+            Self {
+                {% for c in components %}
+                    {{ c }},
+                {%- endfor %}
+            }
+        {% elif is_sse2 or is_neon %}
+            unsafe {
+                Self {
+                    {% for c in components %}
+                        {{ c }}: UnionCast{ a: {{ c }} }.v,
+                    {%- endfor %}
+                }
+            }
+        {% elif is_wasm32 %}
+            Self {
+                {% for c in components %}
+                    {{ c }}: f32x4({{ c }}[3], {{ c }}[2], {{ c }}[1], {{ c }}[0]),
+                {%- endfor %}
+            }
+        {% elif is_coresimd %}
+            Self {
+                {% for c in components %}
+                    {{ c }}: f32x4::from_array({{ c }}),
+                {%- endfor %}
+            }
+        {% endif %}
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn broadcast(v: [{{ scalar_t }}; 4]) -> Self {
+        Self::new(
+            {% for c in components %}
+                v,
+            {%- endfor %}
+        )
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn splat(
+        {% for c in components %}
+            {{ c }}: {{ scalar_t }},
+        {%- endfor %}
+    ) -> Self {
+        {% if is_scalar %}
+            Self {
+                {% for c in components %}
+                    {{ c }}: [{{ c }}; 4],
+                {%- endfor %}
+            }
+        {% elif is_sse2 %}
+            unsafe {
+                Self {
+                    {% for c in components %}
+                        {{ c }}: UnionCast{ a: [{{ c }}; 4] }.v,
+                    {%- endfor %}
+                }
+            }
+        {% endif %}
+    }
+
+    #[inline]
+    #[must_use]
+    pub const fn splat_vec(v: {{ vec_t }}) -> Self {
+        {% if is_scalar %}
+            Self {
+                {% for c in components %}
+                    {{ c }}: [v.{{ c }}; 4],
+                {%- endfor %}
+            }
+        {% elif is_sse2 %}
+            let v = v.to_array();
+            unsafe {
+                Self {
+                    {% for c in components %}
+                        {{ c }}: UnionCast{ a: [v[{{ loop.index - 1 }}]; 4] }.v,
+                    {%- endfor %}
+                }
+            }
+        {% endif %}
+    }
+
+{% if is_float %}
+    #[doc(alias = "magnitude")]
+    #[inline]
+    #[must_use]
+    pub fn length(self) -> [{{ scalar_t }}; 4] {
+        {% if is_scalar %}
+            self.dot(self).map(math::sqrt)
+        {% elif is_sse2 %}
+            unsafe {
+                let dot = dot{{ dim }}x4(
+                {% for c in components %}
+                    self.{{ c }},
+                {%- endfor %}
+                {% for c in components %}
+                    self.{{ c }},
+                {%- endfor %}
+                );
+                let length = _mm_sqrt_ps(dot);
+                UnionCast{ v: length }.a
+            }
+        {% endif %}
+    }
+{% endif %}
+
+    #[inline]
+    #[must_use]
+    pub fn dot(self, rhs: Self) -> [{{ scalar_t }}; 4] {
+    {% if is_scalar %}
+        [
+        {% for i in range(end=4) %}
+        [
+        {% for c in components %}
+            (self.{{ c }}[i] * rhs.{{ c }}[i]) {% if not loop.last %} + {% endif %}
+        {%- endfor %}
+        ],
+        {%- endfor %}
+        ]
+    {% elif is_sse2 %}
+        unsafe {
+            let dot = dot{{ dim }}x4(
+                {% for c in components %}
+                self.{{ c }},
+            {%- endfor %}
+            {% for c in components %}
+                rhs.{{ c }},
+            {%- endfor %}
+            );
+            UnionCast{ v: dot }.a
+        }
+    {% endif %}
+    }
+
+{% if is_float %}
+    #[inline]
+    #[must_use]
+    pub fn is_finite(self) -> bool {
+       todo!()
+    }
+{% endif %}
+
+{% if is_float %}
+    #[inline]
+    #[must_use]
+    pub fn normalize(self) -> Self {
+       todo!()
+    }
+{% endif %}
+
+{% if is_float %}
+    #[inline]
+    #[must_use]
+    pub fn length_recip(self) -> [{{ scalar_t }}; 4] {
+        todo!()
+    }
+{% endif %}
+}

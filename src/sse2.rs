@@ -57,6 +57,49 @@ pub(crate) unsafe fn dot4_in_x(lhs: __m128, rhs: __m128) -> __m128 {
     _mm_add_ps(x2z2_y2w2_0_0, y2w2_0_0_0)
 }
 
+#[inline(always)]
+pub(crate) unsafe fn dot2x4(lhs_x: __m128, lhs_y: __m128, rhs_x: __m128, rhs_y: __m128) -> __m128 {
+    let x2 = _mm_mul_ps(lhs_x, rhs_x);
+    let y2 = _mm_mul_ps(lhs_y, rhs_y);
+    _mm_add_ps(x2, y2)
+}
+
+#[inline(always)]
+pub(crate) unsafe fn dot3x4(
+    lhs_x: __m128,
+    lhs_y: __m128,
+    lhs_z: __m128,
+    rhs_x: __m128,
+    rhs_y: __m128,
+    rhs_z: __m128,
+) -> __m128 {
+    let x2 = _mm_mul_ps(lhs_x, rhs_x);
+    let y2 = _mm_mul_ps(lhs_y, rhs_y);
+    let z2 = _mm_mul_ps(lhs_z, rhs_z);
+    let x2_y2 = _mm_add_ps(x2, y2);
+    _mm_add_ps(x2_y2, z2)
+}
+
+#[inline(always)]
+pub(crate) unsafe fn dot4x4(
+    lhs_x: __m128,
+    lhs_y: __m128,
+    lhs_z: __m128,
+    lhs_w: __m128,
+    rhs_x: __m128,
+    rhs_y: __m128,
+    rhs_z: __m128,
+    rhs_w: __m128,
+) -> __m128 {
+    let x2 = _mm_mul_ps(lhs_x, rhs_x);
+    let y2 = _mm_mul_ps(lhs_y, rhs_y);
+    let z2 = _mm_mul_ps(lhs_z, rhs_z);
+    let w2 = _mm_mul_ps(lhs_w, rhs_w);
+    let x2_y2 = _mm_add_ps(x2, y2);
+    let z2_w2 = _mm_add_ps(z2, w2);
+    _mm_add_ps(x2_y2, z2_w2)
+}
+
 #[inline]
 pub(crate) unsafe fn dot3(lhs: __m128, rhs: __m128) -> f32 {
     _mm_cvtss_f32(dot3_in_x(lhs, rhs))

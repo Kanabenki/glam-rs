@@ -2,5 +2,8 @@ pub mod mat2;
 pub mod mat3a;
 pub mod mat4;
 pub mod quat;
+pub mod vec2x4;
 pub mod vec3a;
+pub mod vec3x4;
 pub mod vec4;
+pub mod vec4x4;

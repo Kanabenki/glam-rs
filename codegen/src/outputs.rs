@@ -345,6 +345,26 @@ impl ContextBuilder {
         Self::new_vecn(4).with_scalar_t("u64")
     }
 
+    pub fn vec_wide(dim: u32) -> Self {
+        ContextBuilder::new()
+            .with_template("vec_wide.rs.tera")
+            .target_scalar()
+            .with_dimension(dim)
+            .with_is_align(false)
+    }
+
+    pub fn new_vec2x4() -> Self {
+        Self::vec_wide(2).with_scalar_t("f32")
+    }
+
+    pub fn new_vec3x4() -> Self {
+        Self::vec_wide(3).with_scalar_t("f32")
+    }
+
+    pub fn new_vec4x4() -> Self {
+        Self::vec_wide(4).with_scalar_t("f32")
+    }
+
     pub fn new_quat() -> Self {
         ContextBuilder::new()
             .with_template("quat.rs.tera")
@@ -726,6 +746,66 @@ pub fn build_output_pairs() -> HashMap<&'static str, tera::Context> {
         (
             "src/f32/coresimd/vec4.rs",
             ContextBuilder::new_vec4().target_coresimd().build(),
+        ),
+        (
+            "src/f32/scalar/vec2x4.rs",
+            ContextBuilder::new_vec2x4().build(),
+        ),
+        (
+            "src/f32/neon/vec2x4.rs",
+            ContextBuilder::new_vec2x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/sse2/vec2x4.rs",
+            ContextBuilder::new_vec2x4().target_sse2().build(),
+        ),
+        (
+            "src/f32/wasm32/vec2x4.rs",
+            ContextBuilder::new_vec2x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/coresimd/vec2x4.rs",
+            ContextBuilder::new_vec2x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/scalar/vec3x4.rs",
+            ContextBuilder::new_vec3x4().build(),
+        ),
+        (
+            "src/f32/neon/vec3x4.rs",
+            ContextBuilder::new_vec3x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/sse2/vec3x4.rs",
+            ContextBuilder::new_vec3x4().target_sse2().build(),
+        ),
+        (
+            "src/f32/wasm32/vec3x4.rs",
+            ContextBuilder::new_vec3x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/coresimd/vec3x4.rs",
+            ContextBuilder::new_vec3x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/scalar/vec4x4.rs",
+            ContextBuilder::new_vec4x4().build(),
+        ),
+        (
+            "src/f32/neon/vec4x4.rs",
+            ContextBuilder::new_vec4x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/sse2/vec4x4.rs",
+            ContextBuilder::new_vec4x4().target_sse2().build(),
+        ),
+        (
+            "src/f32/wasm32/vec4x4.rs",
+            ContextBuilder::new_vec4x4().target_scalar().build(),
+        ),
+        (
+            "src/f32/coresimd/vec4x4.rs",
+            ContextBuilder::new_vec4x4().target_scalar().build(),
         ),
         ("src/f64/dvec2.rs", ContextBuilder::new_dvec2().build()),
         ("src/f64/dvec3.rs", ContextBuilder::new_dvec3().build()),

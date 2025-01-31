@@ -78,9 +78,12 @@ pub use mat3a::{mat3a, Mat3A};
 pub use mat4::{mat4, Mat4};
 pub use quat::{quat, Quat};
 pub use vec2::{vec2, Vec2};
+pub use vec2x4::{vec2x4, Vec2X4};
 pub use vec3::{vec3, Vec3};
 pub use vec3a::{vec3a, Vec3A};
+pub use vec3x4::{vec3x4, Vec3X4};
 pub use vec4::{vec4, Vec4};
+pub use vec4x4::{vec4x4, Vec4X4};
 
 #[cfg(not(target_arch = "spirv"))]
 mod test {
@@ -177,5 +180,38 @@ mod test {
         #[cfg(not(feature = "scalar-math"))]
         const_assert_eq!(16, core::mem::align_of::<super::Vec4>());
         const_assert_eq!(16, core::mem::size_of::<super::Vec4>());
+    }
+
+    mod const_test_vec2x4 {
+        #[cfg(all(feature = "scalar-math", not(feature = "cuda")))]
+        const_assert_eq!(
+            core::mem::align_of::<f32>(),
+            core::mem::align_of::<super::Vec2X4>()
+        );
+        #[cfg(not(feature = "scalar-math"))]
+        const_assert_eq!(16, core::mem::align_of::<super::Vec2X4>());
+        const_assert_eq!(32, core::mem::size_of::<super::Vec2X4>());
+    }
+
+    mod const_test_vec3x4 {
+        #[cfg(all(feature = "scalar-math", not(feature = "cuda")))]
+        const_assert_eq!(
+            core::mem::align_of::<f32>(),
+            core::mem::align_of::<super::Vec2X4>()
+        );
+        #[cfg(not(feature = "scalar-math"))]
+        const_assert_eq!(16, core::mem::align_of::<super::Vec3X4>());
+        const_assert_eq!(48, core::mem::size_of::<super::Vec3X4>());
+    }
+
+    mod const_test_vec4x4 {
+        #[cfg(all(feature = "scalar-math", not(feature = "cuda")))]
+        const_assert_eq!(
+            core::mem::align_of::<f32>(),
+            core::mem::align_of::<super::Vec2X4>()
+        );
+        #[cfg(not(feature = "scalar-math"))]
+        const_assert_eq!(16, core::mem::align_of::<super::Vec4X4>());
+        const_assert_eq!(64, core::mem::size_of::<super::Vec4X4>());
     }
 }

@@ -1908,7 +1908,7 @@ impl {{ self_t }} {
 
     /// Moves towards `rhs` based on the value `d`.
     ///
-    /// When `d` is `0.0`, the result will be equal to `self`. When `d` is equal to 
+    /// When `d` is `0.0`, the result will be equal to `self`. When `d` is equal to
     /// `self.distance(rhs)`, the result will be equal to `rhs`. Will not go past `rhs`.
     #[inline]
     #[must_use]
@@ -1918,10 +1918,10 @@ impl {{ self_t }} {
         if len <= d || len <= 1e-4 {
             return rhs;
         }
-        *self + a / len * d 
+        *self + a / len * d
     }
 
-    /// Calculates the midpoint between `self` and `rhs`. 
+    /// Calculates the midpoint between `self` and `rhs`.
     ///
     /// The midpoint is the average of, or halfway point between, two vectors.
     /// `a.midpoint(b)` should yield the same result as `a.lerp(b, 0.5)`
@@ -1974,7 +1974,7 @@ impl {{ self_t }} {
     #[inline]
     #[must_use]
     pub fn clamp_length_max(self, max: {{ scalar_t }}) -> Self {
-        glam_assert!(0.0 <= max); 
+        glam_assert!(0.0 <= max);
         let length_sq = self.length_squared();
         if length_sq > max * max {
             max * (self / math::sqrt(length_sq))
@@ -1991,7 +1991,7 @@ impl {{ self_t }} {
     #[inline]
     #[must_use]
     pub fn clamp_length_min(self, min: {{ scalar_t }}) -> Self {
-        glam_assert!(0.0 <= min); 
+        glam_assert!(0.0 <= min);
         let length_sq = self.length_squared();
         if length_sq < min * min {
             min * (self / math::sqrt(length_sq))
@@ -2198,7 +2198,7 @@ impl {{ self_t }} {
             let sin_theta = math::sin(theta);
             let t1 = math::sin(theta * (1. - s));
             let t2 = math::sin(theta * s);
-        
+
             // Interpolate vector lengths
             let result_length = self_length.lerp(rhs_length, s);
             // Scale the vectors to the target length and interpolate them
@@ -2214,7 +2214,7 @@ impl {{ self_t }} {
             let rotation = {{ quat_t }}::from_axis_angle(axis, core::{{ scalar_t }}::consts::PI * s);
             // Interpolate vector lengths
             let result_length = self_length.lerp(rhs_length, s);
-            rotation * self * (result_length / self_length) 
+            rotation * self * (result_length / self_length)
         } else {
             // Vectors are almost parallel in the same direction, or dot was NaN
             self.lerp(rhs, s)

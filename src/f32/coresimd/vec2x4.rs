@@ -96,4 +96,22 @@ impl Vec2X4 {
             [(self.x[i] * rhs.x[i]) + (self.y[i] * rhs.y[i])],
         ]
     }
+
+    #[inline]
+    #[must_use]
+    pub fn is_finite(self) -> bool {
+        todo!()
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn normalize(self) -> Self {
+        todo!()
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn length_recip(self) -> [f32; 4] {
+        todo!()
+    }
 }

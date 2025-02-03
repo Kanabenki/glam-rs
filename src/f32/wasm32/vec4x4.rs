@@ -122,4 +122,22 @@ impl Vec4X4 {
                 + (self.w[i] * rhs.w[i])],
         ]
     }
+
+    #[inline]
+    #[must_use]
+    pub fn is_finite(self) -> bool {
+        todo!()
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn normalize(self) -> Self {
+        todo!()
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn length_recip(self) -> [f32; 4] {
+        todo!()
+    }
 }

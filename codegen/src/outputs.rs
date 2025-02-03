@@ -213,6 +213,26 @@ impl ContextBuilder {
         Self::new_bvecn(4, "u32")
     }
 
+    pub fn new_bvecnx4(dim: u32, scalar_t: &str) -> Self {
+        ContextBuilder::new()
+            .with_template("vec_mask_wide.rs.tera")
+            .with_scalar_t(scalar_t)
+            .target_scalar()
+            .with_dimension(dim)
+    }
+
+    pub fn new_bvec2x4() -> Self {
+        Self::new_bvecnx4(2, "u32")
+    }
+
+    pub fn new_bvec3x4() -> Self {
+        Self::new_bvecnx4(3, "u32")
+    }
+
+    pub fn new_bvec4x4() -> Self {
+        Self::new_bvecnx4(4, "u32")
+    }
+
     pub fn new_vecn(dim: u32) -> Self {
         ContextBuilder::new()
             .with_template("vec.rs.tera")
@@ -806,6 +826,66 @@ pub fn build_output_pairs() -> HashMap<&'static str, tera::Context> {
         (
             "src/f32/coresimd/vec4x4.rs",
             ContextBuilder::new_vec4x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/scalar/bvec2x4.rs",
+            ContextBuilder::new_bvec2x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/neon/bvec2x4.rs",
+            ContextBuilder::new_bvec2x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/sse2/bvec2x4.rs",
+            ContextBuilder::new_bvec2x4().target_sse2().build(),
+        ),
+        (
+            "src/bool/wasm32/bvec2x4.rs",
+            ContextBuilder::new_bvec2x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/coresimd/bvec2x4.rs",
+            ContextBuilder::new_bvec2x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/scalar/bvec3x4.rs",
+            ContextBuilder::new_bvec3x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/neon/bvec3x4.rs",
+            ContextBuilder::new_bvec3x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/sse2/bvec3x4.rs",
+            ContextBuilder::new_bvec3x4().target_sse2().build(),
+        ),
+        (
+            "src/bool/wasm32/bvec3x4.rs",
+            ContextBuilder::new_bvec3x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/coresimd/bvec3x4.rs",
+            ContextBuilder::new_bvec3x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/scalar/bvec4x4.rs",
+            ContextBuilder::new_bvec4x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/neon/bvec4x4.rs",
+            ContextBuilder::new_bvec4x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/sse2/bvec4x4.rs",
+            ContextBuilder::new_bvec4x4().target_sse2().build(),
+        ),
+        (
+            "src/bool/wasm32/bvec4x4.rs",
+            ContextBuilder::new_bvec4x4().target_scalar().build(),
+        ),
+        (
+            "src/bool/coresimd/bvec4x4.rs",
+            ContextBuilder::new_bvec4x4().target_scalar().build(),
         ),
         ("src/f64/dvec2.rs", ContextBuilder::new_dvec2().build()),
         ("src/f64/dvec3.rs", ContextBuilder::new_dvec3().build()),
